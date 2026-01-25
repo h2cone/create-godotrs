@@ -44,7 +44,7 @@ This will create a new directory called `mygame` with the following structure:
 mygame/
 ├── .gitignore
 ├── godot/
-│   ├── .gdextension
+│   ├── rust.gdextension
 │   ├── .gitignore
 │   └── project.godot
 └── rust/
@@ -60,7 +60,7 @@ mygame/
 
 The `godot/` directory contains your Godot project files:
 - `project.godot`: The main Godot project configuration
-- `.gdextension`: Configuration for the Rust GDExtension
+- `rust.gdextension`: Configuration for the Rust GDExtension
 - `.gitignore`: Git ignore rules specific to Godot
 
 ### Rust Directory

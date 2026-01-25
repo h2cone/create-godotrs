@@ -5,7 +5,7 @@ This document guides contributors working on `create-godotrs`, a Rust CLI that s
 ## Project Structure & Module Organization
 - Root: `Cargo.toml`, `README.md`, `SPEC.md`, `AGENTS.md`.
 - Source: `src/` — CLI entry in `src/main.rs`, core logic and tests in `src/lib.rs`.
-- Templates: `templates/` — embedded files written into generated projects (`Godot.gdextension`, `Godot.gitignore`, `Rust.gitignore`, `Project.gitignore`).
+- Templates: `templates/` — embedded files written into generated projects (`rust.gdextension`, `Godot.gitignore`, `Rust.gitignore`, `Project.gitignore`).
 - Build artifacts: `target/` (ignored in VCS).
 
 ## Build, Test, and Development Commands
@@ -27,7 +27,7 @@ This document guides contributors working on `create-godotrs`, a Rust CLI that s
 - Aim for coverage of: directory creation, template writing, idempotency/error (`ProjectAlreadyExists`).
 
 ## Commit & Pull Request Guidelines
-- Commits: use Conventional Commits (e.g., `feat: add rust Cargo.toml generator`, `fix: correct .gdextension paths`).
+- Commits: use Conventional Commits (e.g., `feat: add rust Cargo.toml generator`, `fix: correct rust.gdextension paths`).
 - PRs: include a concise description, linked issues, before/after notes, and CLI examples (`cargo run -- mygame`). Add screenshots only when helpful.
 - Tests: required for behavior changes to scaffolding, templates, or errors.
 

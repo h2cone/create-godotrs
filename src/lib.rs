@@ -7,7 +7,7 @@ pub mod templates {
     pub const PROJECT_GITIGNORE: &str = include_str!("../templates/Project.gitignore");
     pub const GODOT_GITIGNORE: &str = include_str!("../templates/Godot.gitignore");
     pub const RUST_GITIGNORE: &str = include_str!("../templates/Rust.gitignore");
-    pub const GODOT_GDEXTENSION: &str = include_str!("../templates/Godot.gdextension");
+    pub const RUST_GDEXTENSION: &str = include_str!("../templates/rust.gdextension");
 }
 
 /// Errors that can occur during project creation
@@ -114,10 +114,10 @@ fn generate_template_files(project_path: &Path, _project_name: &str) -> Result<(
         templates::GODOT_GITIGNORE,
     )?;
 
-    // Write godot .gdextension
+    // Write godot rust.gdextension
     fs::write(
-        project_path.join("godot/.gdextension"),
-        templates::GODOT_GDEXTENSION,
+        project_path.join("godot/rust.gdextension"),
+        templates::RUST_GDEXTENSION,
     )?;
 
     // Write rust .gitignore
@@ -201,7 +201,7 @@ mod tests {
         // Verify template files
         assert!(project_path.join(".gitignore").exists());
         assert!(project_path.join("godot/.gitignore").exists());
-        assert!(project_path.join("godot/.gdextension").exists());
+        assert!(project_path.join("godot/rust.gdextension").exists());
         assert!(project_path.join("godot/project.godot").exists());
         assert!(project_path.join("rust/.gitignore").exists());
         assert!(project_path.join("rust/Cargo.toml").exists());

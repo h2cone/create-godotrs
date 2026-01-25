@@ -65,7 +65,7 @@ Templates are embedded at compile-time from `templates/` directory:
 - `Project.gitignore`: Root-level gitignore
 - `Godot.gitignore`: Godot-specific ignores
 - `Rust.gitignore`: Rust-specific ignores
-- `Godot.gdextension`: GDExtension configuration with platform-specific library paths
+- `rust.gdextension`: GDExtension configuration with platform-specific library paths
 
 Templates are accessed via the `templates` module (src/lib.rs:6) and written directly to disk without modification, except for:
 - `project.godot`: Project name is interpolated as `{name}-godot`
