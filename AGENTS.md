@@ -1,37 +1,40 @@
 # Repository Guidelines
 
-This document guides contributors working on `create-godotrs`, a Rust CLI that scaffolds a Godot + Rust project using gdext.
-
 ## Project Structure & Module Organization
-- Root: `Cargo.toml`, `README.md`, `SPEC.md`, `AGENTS.md`.
-- Source: `src/` — CLI entry in `src/main.rs`, core logic and tests in `src/lib.rs`.
-- Templates: `templates/` — embedded files written into generated projects (`rust.gdextension`, `Godot.gitignore`, `Rust.gitignore`, `Project.gitignore`).
-- Build artifacts: `target/` (ignored in VCS).
+This repository is a small Rust CLI that scaffolds Godot + Rust projects.
+
+- `src/main.rs`: CLI entrypoint using `clap` (`create-godotrs <name> [--template proto]`).
+- `src/lib.rs`: core project-generation logic, error types, template selection, and unit tests.
+- `templates/`: embedded scaffold files loaded with `include_str!` (for `.gitignore` and `rust.gdextension`).
+- `target/`: local build artifacts; do not commit.
+
+Keep generation behavior centralized in `src/lib.rs` and keep `src/main.rs` focused on argument parsing and user output.
 
 ## Build, Test, and Development Commands
-- `cargo build` — compile in debug mode.
-- `cargo build --release` — optimized binary in `target/release/create-godotrs`.
-- `cargo run -- <project-name>` — run the generator locally (e.g., `cargo run -- mygame`).
-- `cargo test` — run unit tests in `src/lib.rs`.
-- `cargo install --path .` — install the CLI locally as `create-godotrs`.
+- `cargo build`: compile debug build.
+- `cargo build --release`: build optimized binary in `target/release/create-godotrs`.
+- `cargo run -- mygame`: run CLI locally and scaffold a basic project.
+- `cargo run -- mygame --template proto`: scaffold the proto directory layout.
+- `cargo test`: run unit tests (filesystem behavior and template layout checks).
+- `cargo fmt`: format code with rustfmt.
+- `cargo clippy --all-targets --all-features -D warnings`: lint and treat warnings as errors.
 
 ## Coding Style & Naming Conventions
-- Language: Rust (edition 2024). Use 4‑space indentation, `snake_case` for modules/functions, `CamelCase` for types, `SCREAMING_SNAKE_CASE` for constants.
-- Formatting: `rustfmt` (use `cargo fmt`). Linting: `clippy` (use `cargo clippy --all-targets --all-features -D warnings`).
-- Error handling: prefer typed errors (`CreateError`) and `Result` returns over panics in library code.
+- Rust edition: `2024` (see `Cargo.toml`).
+- Use rustfmt defaults (4-space indentation, trailing commas where appropriate).
+- Naming: `snake_case` for functions/modules, `CamelCase` for structs/enums, `UPPER_SNAKE_CASE` for constants.
+- Prefer small, focused functions for file/directory creation steps; propagate errors with `Result`.
 
 ## Testing Guidelines
-- Framework: Rust built‑in test harness (`#[test]`).
-- Location: co‑located unit tests in `src/lib.rs` under `#[cfg(test)]`.
-- Style: name tests `test_<behavior>()` and assert filesystem output (dirs/files and key contents).
-- Aim for coverage of: directory creation, template writing, idempotency/error (`ProjectAlreadyExists`).
+- Tests live in `src/lib.rs` under `#[cfg(test)]`.
+- Test names follow `test_<expected_behavior>` (for example, `test_create_project_with_proto_template`).
+- Use `tempfile::TempDir` for isolated filesystem tests.
+- Cover both success and failure flows (existing path, template-specific directories, generated file contents).
 
 ## Commit & Pull Request Guidelines
-- Commits: use Conventional Commits (e.g., `feat: add rust Cargo.toml generator`, `fix: correct rust.gdextension paths`).
-- PRs: include a concise description, linked issues, before/after notes, and CLI examples (`cargo run -- mygame`). Add screenshots only when helpful.
-- Tests: required for behavior changes to scaffolding, templates, or errors.
-
-## Agent‑Specific Notes
-- Keep templates in `templates/` the source of truth; update tests when changing them.
-- Avoid invoking external tools for scaffolding; use Rust stdlib for IO and paths.
-- Never overwrite an existing project directory; return `ProjectAlreadyExists`.
+- Follow the lightweight conventional style visible in history, e.g. `refactor: rename gdextension template to rust.gdextension`.
+- Recommended format: `<type>: <short imperative summary>` (`feat`, `fix`, `refactor`, `test`, `docs`).
+- PRs should include:
+  - clear summary of behavior changes,
+  - linked issue (if applicable),
+  - local verification steps/results (at minimum `cargo test`).

@@ -32,6 +32,12 @@ To create a new project:
 create-godotrs <project-name>
 ```
 
+To create with the proto template:
+
+```bash
+create-godotrs <project-name> --template proto
+```
+
 For example:
 
 ```bash
@@ -52,6 +58,21 @@ mygame/
     ├── Cargo.toml
     └── src/
         └── lib.rs
+```
+
+When `--template proto` is used, additional directories are created under `godot/`:
+
+```
+godot/
+├── addons/
+│   ├── AsepriteWizard/
+│   └── ldtk-importer/
+├── entity/
+├── pipeline/
+│   ├── aseprite/
+│   └── ldtk/
+├── player/
+└── ui/
 ```
 
 ## Project Structure

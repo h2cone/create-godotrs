@@ -1,5 +1,6 @@
 use clap::Parser;
-use create_godotrs::{ProjectConfig, create_project};
+use clap::ValueEnum;
+use create_godotrs::{ProjectConfig, ProjectTemplate, create_project};
 use std::process;
 
 /// Create a new Godot project with Rust
@@ -9,12 +10,31 @@ use std::process;
 struct Args {
     /// Name of the project to create
     name: String,
+
+    /// Scaffold template
+    #[arg(long, value_enum, default_value_t = TemplateArg::Basic)]
+    template: TemplateArg,
+}
+
+#[derive(Clone, Debug, ValueEnum)]
+enum TemplateArg {
+    Basic,
+    Proto,
+}
+
+impl From<TemplateArg> for ProjectTemplate {
+    fn from(value: TemplateArg) -> Self {
+        match value {
+            TemplateArg::Basic => ProjectTemplate::Basic,
+            TemplateArg::Proto => ProjectTemplate::Proto,
+        }
+    }
 }
 
 fn main() {
     let args = Args::parse();
 
-    let config = ProjectConfig::new(args.name);
+    let config = ProjectConfig::new(args.name).with_template(args.template.into());
 
     match create_project(&config) {
         Ok(()) => {

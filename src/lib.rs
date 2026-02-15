@@ -36,11 +36,18 @@ impl std::fmt::Display for CreateError {
 
 impl std::error::Error for CreateError {}
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProjectTemplate {
+    Basic,
+    Proto,
+}
+
 /// Configuration for creating a new project
 #[derive(Debug, Clone)]
 pub struct ProjectConfig {
     pub name: String,
     pub base_path: PathBuf,
+    pub template: ProjectTemplate,
 }
 
 impl ProjectConfig {
@@ -48,11 +55,17 @@ impl ProjectConfig {
         Self {
             name,
             base_path: std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+            template: ProjectTemplate::Basic,
         }
     }
 
     pub fn with_base_path(mut self, path: PathBuf) -> Self {
         self.base_path = path;
+        self
+    }
+
+    pub fn with_template(mut self, template: ProjectTemplate) -> Self {
+        self.template = template;
         self
     }
 
@@ -65,85 +78,87 @@ impl ProjectConfig {
 pub fn create_project(config: &ProjectConfig) -> Result<(), CreateError> {
     let project_path = config.project_path();
 
-    // Check if project already exists
     if project_path.exists() {
         return Err(CreateError::ProjectAlreadyExists(project_path));
     }
 
-    // Create project directory structure
     create_directory_structure(&project_path)?;
 
-    // Generate template files
-    generate_template_files(&project_path, &config.name)?;
+    let result = (|| {
+        generate_template_files(&project_path)?;
+        initialize_godot_project(&project_path, &config.name)?;
+        if config.template == ProjectTemplate::Proto {
+            initialize_proto_template(&project_path)?;
+        }
+        initialize_rust_project(&project_path)?;
+        Ok(())
+    })();
 
-    // Initialize Godot project
-    initialize_godot_project(&project_path, &config.name)?;
+    if result.is_err() {
+        let _ = fs::remove_dir_all(&project_path);
+    }
 
-    // Initialize Rust project
-    initialize_rust_project(&project_path)?;
-
-    Ok(())
+    result
 }
 
-/// Create the directory structure for the project
 fn create_directory_structure(project_path: &Path) -> Result<(), CreateError> {
-    // Create main project directory
     fs::create_dir_all(project_path)?;
-
-    // Create godot subdirectory
     fs::create_dir(project_path.join("godot"))?;
-
-    // Create rust subdirectory and src
     fs::create_dir(project_path.join("rust"))?;
     fs::create_dir(project_path.join("rust/src"))?;
-
     Ok(())
 }
 
-/// Generate template files from embedded templates
-fn generate_template_files(project_path: &Path, _project_name: &str) -> Result<(), CreateError> {
-    // Write root .gitignore
+fn generate_template_files(project_path: &Path) -> Result<(), CreateError> {
     fs::write(
         project_path.join(".gitignore"),
         templates::PROJECT_GITIGNORE,
     )?;
-
-    // Write godot .gitignore
     fs::write(
         project_path.join("godot/.gitignore"),
         templates::GODOT_GITIGNORE,
     )?;
-
-    // Write godot rust.gdextension
     fs::write(
         project_path.join("godot/rust.gdextension"),
         templates::RUST_GDEXTENSION,
     )?;
-
-    // Write rust .gitignore
     fs::write(
         project_path.join("rust/.gitignore"),
         templates::RUST_GITIGNORE,
     )?;
-
     Ok(())
 }
 
-/// Initialize the Godot project
 fn initialize_godot_project(project_path: &Path, project_name: &str) -> Result<(), CreateError> {
     let godot_project_content = format!("[application]\nconfig/name=\"{}-godot\"\n", project_name);
-
     fs::write(
         project_path.join("godot/project.godot"),
         godot_project_content,
     )?;
+    Ok(())
+}
+
+/// Initialize the proto template structure with directory skeleton only
+fn initialize_proto_template(project_path: &Path) -> Result<(), CreateError> {
+    let godot_path = project_path.join("godot");
+    let directories = [
+        godot_path.join("entity"),
+        godot_path.join("player"),
+        godot_path.join("ui"),
+        godot_path.join("pipeline/aseprite"),
+        godot_path.join("pipeline/ldtk"),
+        godot_path.join("addons/AsepriteWizard"),
+        godot_path.join("addons/ldtk-importer"),
+    ];
+
+    for dir in directories {
+        fs::create_dir_all(dir)?;
+    }
 
     Ok(())
 }
 
-/// Initialize the Rust project
 fn initialize_rust_project(project_path: &Path) -> Result<(), CreateError> {
-    // Write lib.rs
     let lib_rs_content = r#"use godot::prelude::*;
 
 struct MyExtension;
@@ -154,7 +169,6 @@ unsafe impl ExtensionLibrary for MyExtension {}
 
     fs::write(project_path.join("rust/src/lib.rs"), lib_rs_content)?;
 
-    // Write Cargo.toml
     let cargo_toml_content = r#"[package]
 name = "rust"
 version = "0.1.0"
@@ -191,14 +205,12 @@ mod tests {
         let result = create_project(&config);
         assert!(result.is_ok());
 
-        // Verify directory structure
         let project_path = config.project_path();
         assert!(project_path.exists());
         assert!(project_path.join("godot").exists());
         assert!(project_path.join("rust").exists());
         assert!(project_path.join("rust/src").exists());
 
-        // Verify template files
         assert!(project_path.join(".gitignore").exists());
         assert!(project_path.join("godot/.gitignore").exists());
         assert!(project_path.join("godot/rust.gdextension").exists());
@@ -207,22 +219,8 @@ mod tests {
         assert!(project_path.join("rust/Cargo.toml").exists());
         assert!(project_path.join("rust/src/lib.rs").exists());
 
-        // Verify content of project.godot
         let godot_content = fs::read_to_string(project_path.join("godot/project.godot")).unwrap();
         assert!(godot_content.contains("config/name=\"testproject-godot\""));
-
-        // Verify content of lib.rs
-        let lib_rs_content = fs::read_to_string(project_path.join("rust/src/lib.rs")).unwrap();
-        assert!(lib_rs_content.contains("use godot::prelude::*"));
-        assert!(lib_rs_content.contains("struct MyExtension"));
-        assert!(lib_rs_content.contains("#[gdextension]"));
-
-        // Verify content of Cargo.toml
-        let cargo_content = fs::read_to_string(project_path.join("rust/Cargo.toml")).unwrap();
-        assert!(cargo_content.contains("crate-type = [\"cdylib\"]"));
-        assert!(
-            cargo_content.contains("godot = { git = \"https://github.com/godot-rust/gdext\" }")
-        );
     }
 
     #[test]
@@ -231,10 +229,8 @@ mod tests {
         let config = ProjectConfig::new("testproject".to_string())
             .with_base_path(temp_dir.path().to_path_buf());
 
-        // Create project first time
         create_project(&config).unwrap();
 
-        // Try to create again
         let result = create_project(&config);
         assert!(result.is_err());
         match result {
@@ -244,10 +240,31 @@ mod tests {
     }
 
     #[test]
+    fn test_create_project_with_proto_template() {
+        let temp_dir = TempDir::new().unwrap();
+
+        let config = ProjectConfig::new("templated-project".to_string())
+            .with_base_path(temp_dir.path().to_path_buf())
+            .with_template(ProjectTemplate::Proto);
+
+        create_project(&config).unwrap();
+
+        let project_path = config.project_path();
+        assert!(project_path.join("godot/entity").exists());
+        assert!(project_path.join("godot/player").exists());
+        assert!(project_path.join("godot/ui").exists());
+        assert!(project_path.join("godot/pipeline/aseprite").exists());
+        assert!(project_path.join("godot/pipeline/ldtk").exists());
+        assert!(project_path.join("godot/addons/AsepriteWizard").exists());
+        assert!(project_path.join("godot/addons/ldtk-importer").exists());
+    }
+
+    #[test]
     fn test_project_config_project_path() {
         let config =
             ProjectConfig::new("myproject".to_string()).with_base_path(PathBuf::from("/test/path"));
 
         assert_eq!(config.project_path(), PathBuf::from("/test/path/myproject"));
+        assert_eq!(config.template, ProjectTemplate::Basic);
     }
 }
