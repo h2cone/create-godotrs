@@ -145,7 +145,9 @@ fn initialize_proto_template(project_path: &Path) -> Result<(), CreateError> {
         godot_path.join("entity"),
         godot_path.join("player"),
         godot_path.join("ui"),
-        godot_path.join("pipeline/aseprite"),
+        godot_path.join("pipeline/aseprite/scripts"),
+        godot_path.join("pipeline/aseprite/src"),
+        godot_path.join("pipeline/aseprite/wizard"),
         godot_path.join("pipeline/ldtk"),
         godot_path.join("addons/AsepriteWizard"),
         godot_path.join("addons/ldtk-importer"),
@@ -254,6 +256,13 @@ mod tests {
         assert!(project_path.join("godot/player").exists());
         assert!(project_path.join("godot/ui").exists());
         assert!(project_path.join("godot/pipeline/aseprite").exists());
+        assert!(
+            project_path
+                .join("godot/pipeline/aseprite/scripts")
+                .exists()
+        );
+        assert!(project_path.join("godot/pipeline/aseprite/src").exists());
+        assert!(project_path.join("godot/pipeline/aseprite/wizard").exists());
         assert!(project_path.join("godot/pipeline/ldtk").exists());
         assert!(project_path.join("godot/addons/AsepriteWizard").exists());
         assert!(project_path.join("godot/addons/ldtk-importer").exists());

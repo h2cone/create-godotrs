@@ -70,6 +70,9 @@ godot/
 ├── entity/
 ├── pipeline/
 │   ├── aseprite/
+│   │   ├── scripts/
+│   │   ├── src/
+│   │   └── wizard/
 │   └── ldtk/
 ├── player/
 └── ui/
