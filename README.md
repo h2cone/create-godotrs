@@ -8,6 +8,19 @@ A command-line tool for creating new Godot projects with Rust using the gdext li
 
 ## Installation
 
+### Prebuilt Releases
+
+Download the latest release for your platform from
+[GitHub Releases](https://github.com/h2cone/create-godotrs/releases/latest).
+
+| Platform | Architecture | Download |
+|----------|--------------|----------|
+| Linux | x86_64 | [`create-godotrs-v0.1.0-x86_64-linux.tar.gz`](https://github.com/h2cone/create-godotrs/releases/latest/download/create-godotrs-v0.1.0-x86_64-linux.tar.gz) |
+| Linux | arm64 | [`create-godotrs-v0.1.0-aarch64-linux.tar.gz`](https://github.com/h2cone/create-godotrs/releases/latest/download/create-godotrs-v0.1.0-aarch64-linux.tar.gz) |
+| macOS | Intel | [`create-godotrs-v0.1.0-x86_64-darwin.tar.gz`](https://github.com/h2cone/create-godotrs/releases/latest/download/create-godotrs-v0.1.0-x86_64-darwin.tar.gz) |
+| macOS | Apple Silicon | [`create-godotrs-v0.1.0-aarch64-darwin.tar.gz`](https://github.com/h2cone/create-godotrs/releases/latest/download/create-godotrs-v0.1.0-aarch64-darwin.tar.gz) |
+| Windows | x86_64 | [`create-godotrs-v0.1.0-x86_64-windows.zip`](https://github.com/h2cone/create-godotrs/releases/latest/download/create-godotrs-v0.1.0-x86_64-windows.zip) |
+
 ### From Source
 
 ```bash
